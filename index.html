@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0c"><title>DicoChinois</title>
+<style>
+:root{--bg:#0a0a0c;--card:#16161a;--line:#26262c;--tx:#f4f4f6;--mu:#9a9aa5;--red:#c8102e;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:90px}
+#app{max-width:560px;margin:0 auto;padding:16px}
+h1{font-family:Georgia,"Times New Roman",serif;font-size:34px;margin:0}h1 span{color:var(--red)}
+.logo{display:flex;gap:12px;align-items:center;margin-bottom:16px}
+.lg{border:2px solid var(--red);color:var(--red);border-radius:6px;padding:2px 6px;line-height:1.1;font-size:22px;text-align:center}
+.sub{color:var(--mu);font-size:14px}
+input[type=search]{width:100%;background:var(--card);border:1px solid var(--line);border-radius:28px;padding:14px 18px;color:var(--tx);font-size:16px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.tile,.row,.box{background:var(--card);border:1px solid var(--line);border-radius:16px}
+.tile{padding:22px 10px;text-align:center;font-size:17px;font-weight:600;cursor:pointer;color:var(--tx)}
+.tile i{display:block;font-style:normal;font-size:26px;margin-bottom:6px}
+.wod{border-left:4px solid var(--red);background:linear-gradient(90deg,#2a0a12,var(--card));border-radius:16px;padding:16px;cursor:pointer;margin-bottom:14px}
+.wod b{display:block;font-size:34px;margin:4px 0}
+.row{display:flex;gap:14px;align-items:center;padding:14px;margin-bottom:10px;cursor:pointer}
+.row .h{color:var(--red);font-size:30px;min-width:70px}
+.row .p{font-weight:600}.row .f{color:var(--mu);font-size:14px}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.top h2{font-size:18px;margin:0}
+.ib{background:none;border:0;color:var(--tx);font-size:26px;cursor:pointer;padding:4px 10px}
+.big{display:flex;gap:16px;align-items:center;margin-bottom:16px}
+.cbox{position:relative;width:170px;height:170px;flex:none;background:var(--card);border:1px solid var(--line);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:76px;white-space:nowrap}
+.cbox.s{font-size:54px}
+.badge{position:absolute;top:-10px;left:50%;background:var(--red);border-radius:14px;padding:3px 12px;font-size:14px}
+.py{font-size:28px}.spk{background:var(--red);border:0;color:#fff;border-radius:50%;width:44px;height:44px;font-size:18px;cursor:pointer;margin-left:8px}
+h3{border-left:4px solid var(--red);padding-left:10px;margin:20px 0 10px;font-size:18px}
+.btn{display:block;width:100%;padding:16px;border-radius:30px;border:1px solid var(--line);background:none;color:var(--tx);font-size:17px;margin-bottom:10px;cursor:pointer}
+.btn.r{background:linear-gradient(#c8102e,#a50d26);border:0;font-weight:600}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:8px 14px;color:var(--tx);cursor:pointer}
+.chip.on{border-color:var(--red);color:var(--red)}
+canvas{width:100%;max-width:340px;aspect-ratio:1;background:var(--card);border:1px solid var(--line);border-radius:18px;touch-action:none;display:block;margin:0 auto 14px}
+.opt{display:block;width:100%;text-align:left;padding:16px;margin-bottom:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;color:var(--tx);font-size:16px;cursor:pointer}
+.opt.ok{border-color:#2e9e5b;background:#10261a}.opt.no{border-color:var(--red);background:#2a0a12}
+.card{text-align:center;padding:40px 16px;font-size:70px;margin-bottom:14px}.card small{display:block;font-size:20px;color:var(--mu);margin-top:10px}
+.bar{height:8px;background:var(--line);border-radius:4px;margin:6px 0 14px;overflow:hidden}.bar div{height:100%;background:var(--red)}
+.box{padding:16px;margin-bottom:12px}
+nav{position:fixed;left:0;right:0;bottom:0;background:#0d0d10;border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0px)}
+nav div{display:flex;width:100%;max-width:560px}
+nav button{flex:1;background:none;border:0;color:var(--mu);padding:10px 0;font-size:12px;cursor:pointer}
+nav button.on{color:var(--red)}nav button i{display:block;font-style:normal;font-size:22px}
+.mu{color:var(--mu)}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media print{:root{--bg:#fff;--card:#fff;--line:#bbb;--tx:#000;--mu:#444}body{background:#fff;color:#000}nav,.noprint,.top button,.spk{display:none}svg text{stroke:#fff !important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav><div id="nav"></div></nav>
+<script>
+const W=[
+["的","de","de (particule de possession ou de relation)",1],["我","wǒ","je, moi",1],["你","nǐ","tu, toi",1],["好","hǎo","bien, bon",1],
+["你好","nǐ hǎo","bonjour",1],["谢谢","xiè xie","merci",1],["再见","zài jiàn","au revoir",1],["是","shì","être",1],["不","bù","ne… pas",1],
+["人","rén","personne",1],["水","shuǐ","eau",1],["吃","chī","manger",1],["喝","hē","boire",1],["爱","ài","aimer",1],["大","dà","grand",1],
+["小","xiǎo","petit",1],["中国","Zhōng guó","Chine",1],["朋友","péng you","ami",1],["老师","lǎo shī","professeur",1],["学生","xué sheng","étudiant",1],
+["电脑","diàn nǎo","ordinateur",1],["衣服","yī fu","vêtement",1],["出租车","chū zū chē","taxi",2],["游戏","yóu xì","jeu vidéo",3],
+["裤子","kù zi","pantalon",3],["耳机","ěr jī","écouteurs",5],["的士","dī shì","taxi",6],["的哥","dī gē","chauffeur de taxi",6],
+["家","jiā","maison, famille",1],["学校","xué xiào","école",1],["书","shū","livre",1],["钱","qián","argent",1],["车","chē","voiture",1],["饭","fàn","repas, riz cuit",1],["茶","chá","thé",1],["猫","māo","chat",1],["狗","gǒu","chien",1],
+["今天","jīn tiān","aujourd’hui",1],["明天","míng tiān","demain",1],["昨天","zuó tiān","hier",2],["时间","shí jiān","temps, heure",1],["工作","gōng zuò","travail, travailler",1],
+["电话","diàn huà","téléphone",1],["手机","shǒu jī","téléphone portable, smartphone",2],["电视","diàn shì","télévision",1],["商店","shāng diàn","magasin, boutique",2],
+["买","mǎi","acheter",1],["卖","mài","vendre",2],["便宜","pián yi","bon marché, pas cher",2],["贵","guì","cher, coûteux",2],["多少","duō shao","combien",1],
+["打折","dǎ zhé","solde, soldes, promotion, réduction",4],["折扣","zhé kòu","remise, rabais, solde",5],["空手道","kōng shǒu dào","karaté",6],["功夫","gōng fu","kung-fu, savoir-faire",4],
+["学习","xué xí","apprendre, étudier",1],["说","shuō","parler, dire",1],["看","kàn","regarder, voir",1],["听","tīng","écouter, entendre",1],["写","xiě","écrire",2],["读","dú","lire",2],
+["去","qù","aller",1],["来","lái","venir",1],["有","yǒu","avoir, il y a",1],["没有","méi yǒu","ne pas avoir, il n’y a pas",1],["这","zhè","ce, ceci",1],["那","nà","cela, là-bas",1],
+["什么","shén me","quoi, que",1],["谁","shéi","qui",1],["哪里","nǎ li","où",1],["为什么","wèi shén me","pourquoi",2],["对不起","duì bu qǐ","désolé, pardon",1],["没关系","méi guān xi","pas de problème, ça ne fait rien",1],["请","qǐng","s’il vous plaît, inviter",1],
+["爸爸","bà ba","papa, père",1],["妈妈","mā ma","maman, mère",1],["孩子","hái zi","enfant",2],["男人","nán rén","homme",2],["女人","nǚ rén","femme",2],
+["太阳","tài yáng","soleil",2],["月亮","yuè liang","lune",2],["火","huǒ","feu",3],["山","shān","montagne",3],["花","huā","fleur",2],
+["红色","hóng sè","rouge",2],["黑色","hēi sè","noir",2],["白色","bái sè","blanc",2],["好吃","hǎo chī","délicieux, bon à manger",1],["漂亮","piào liang","joli, beau",1],["高兴","gāo xìng","content, heureux",1],
+["累","lèi","fatigué",2],["快","kuài","rapide, vite",2],["慢","màn","lent, lentement",2],["一","yī","un",1],["二","èr","deux",1],["三","sān","trois",1],["十","shí","dix",1],["百","bǎi","cent",2],["千","qiān","mille",2],
+["哥哥","gē ge","grand frère",1],["姐姐","jiě jie","grande sœur",1],["弟弟","dì di","petit frère",1],["妹妹","mèi mei","petite sœur",1],["儿子","ér zi","fils",1],["女儿","nǚ ér","fille (enfant)",1],["丈夫","zhàng fu","mari",3],["妻子","qī zi","épouse",3],["奶奶","nǎi nai","grand-mère paternelle",3],["爷爷","yé ye","grand-père paternel",3],
+["头","tóu","tête",3],["手","shǒu","main",2],["脚","jiǎo","pied",3],["眼睛","yǎn jing","œil, yeux",2],["耳朵","ěr duo","oreille",3],["嘴","zuǐ","bouche",3],["心","xīn","cœur",2],
+["米饭","mǐ fàn","riz cuit",1],["面条","miàn tiáo","nouilles",2],["鸡蛋","jī dàn","œuf",2],["牛奶","niú nǎi","lait",2],["咖啡","kā fēi","café",2],["苹果","píng guǒ","pomme",1],["水果","shuǐ guǒ","fruit",2],["鱼","yú","poisson",2],["鸡","jī","poulet",2],["肉","ròu","viande",2],["菜","cài","légume, plat",1],["啤酒","pí jiǔ","bière",2],["面包","miàn bāo","pain",2],
+["马","mǎ","cheval",2],["鸟","niǎo","oiseau",3],["老虎","lǎo hǔ","tigre",4],["龙","lóng","dragon",4],
+["年","nián","année, an",1],["月","yuè","mois, lune",1],["日","rì","jour, soleil",1],["星期","xīng qī","semaine",1],["现在","xiàn zài","maintenant",1],["早上","zǎo shang","matin",1],["晚上","wǎn shang","soir, nuit",1],["中午","zhōng wǔ","midi",1],["点","diǎn","heure, point",1],["分钟","fēn zhōng","minute",2],["年轻","nián qīng","jeune",3],
+["医院","yī yuàn","hôpital",1],["银行","yín háng","banque",3],["饭店","fàn diàn","restaurant, hôtel",1],["机场","jī chǎng","aéroport",2],["火车站","huǒ chē zhàn","gare",2],["公司","gōng sī","entreprise, société",2],["城市","chéng shì","ville",3],["国家","guó jiā","pays",3],["非洲","Fēi zhōu","Afrique",5],["法国","Fǎ guó","France",2],["多哥","Duō gē","Togo",6],
+["做","zuò","faire",1],["想","xiǎng","penser, vouloir",1],["要","yào","vouloir, devoir",1],["知道","zhī dào","savoir",2],["喜欢","xǐ huan","aimer, apprécier",1],["住","zhù","habiter",2],["坐","zuò","s’asseoir, prendre (un transport)",1],["开","kāi","ouvrir, conduire",2],["关","guān","fermer",3],["给","gěi","donner",2],["找","zhǎo","chercher",2],["帮助","bāng zhù","aider",2],["玩","wán","jouer, s’amuser",2],["睡觉","shuì jiào","dormir",2],["走","zǒu","marcher, partir",2],["跑步","pǎo bù","courir",2],["唱歌","chàng gē","chanter",2],["跳舞","tiào wǔ","danser",3],["问","wèn","demander",2],["回答","huí dá","répondre",3],["等","děng","attendre",2],["用","yòng","utiliser",3],["懂","dǒng","comprendre",2],["会","huì","savoir (faire), pouvoir",1],["能","néng","pouvoir",1],["可以","kě yǐ","pouvoir, avoir le droit",2],["洗","xǐ","laver",2],["哭","kū","pleurer",4],["笑","xiào","rire, sourire",2],
+["多","duō","beaucoup",1],["少","shǎo","peu",1],["新","xīn","nouveau",2],["旧","jiù","vieux (objet)",3],["好看","hǎo kàn","beau à voir, joli",2],["难","nán","difficile",3],["容易","róng yì","facile",3],["热","rè","chaud",2],["冷","lěng","froid",2],["长","cháng","long",3],["高","gāo","haut, grand",2],["远","yuǎn","loin",2],["近","jìn","proche",2],["忙","máng","occupé",2],["对","duì","correct, juste",2],["错","cuò","faux, erreur",3],["重要","zhòng yào","important",3],["快乐","kuài lè","joyeux, heureux",2],["安全","ān quán","sûr, sécurité",3],["免费","miǎn fèi","gratuit",5],
+["网站","wǎng zhàn","site web",4],["网络","wǎng luò","réseau, internet",4],["软件","ruǎn jiàn","logiciel",5],["应用","yìng yòng","application, appliquer",4],["密码","mì mǎ","mot de passe",5],["账户","zhàng hù","compte",5],["余额","yú é","solde (d’un compte)",6],["付款","fù kuǎn","payer, paiement",5],["支付","zhī fù","paiement",5],["订单","dìng dān","commande",6],["价格","jià gé","prix",3],["产品","chǎn pǐn","produit",3],["顾客","gù kè","client",4],["快递","kuài dì","livraison express, colis",4],["退款","tuì kuǎn","remboursement",6],["优惠","yōu huì","offre avantageuse, promotion",5],["特价","tè jià","prix spécial, soldes",6],["清仓","qīng cāng","liquidation de stock, soldes",6],["礼物","lǐ wù","cadeau",3],["游戏机","yóu xì jī","console de jeu",6],["键盘","jiàn pán","clavier",5],["鼠标","shǔ biāo","souris (ordinateur)",5],["屏幕","píng mù","écran",6],["电池","diàn chí","batterie, pile",5],["充电器","chōng diàn qì","chargeur",6],["相机","xiàng jī","appareil photo",3],["音乐","yīn yuè","musique",2],["电影","diàn yǐng","film, cinéma",1],["动漫","dòng màn","anime, manga",6],["视频","shì pín","vidéo",5],
+["欢迎","huān yíng","bienvenue",3],["加油","jiā yóu","courage, allez !",5],["晚安","wǎn ān","bonne nuit",3],["早安","zǎo ān","bonjour (le matin)",5],["不客气","bú kè qi","de rien",2],["我爱你","wǒ ài nǐ","je t’aime",2]
+].map((a,i)=>({id:i,h:a[0],p:a[1],f:a[2],l:a[3]}));
+
+const TR={谢谢:"謝謝",再见:"再見",爱:"愛",中国:"中國",老师:"老師",学生:"學生",电脑:"電腦",游戏:"遊戲",裤子:"褲子",耳机:"耳機",学校:"學校",书:"書",钱:"錢",车:"車",饭:"飯",猫:"貓",时间:"時間",电话:"電話",手机:"手機",电视:"電視",买:"買",卖:"賣",贵:"貴",学习:"學習",说:"說",听:"聽",写:"寫",读:"讀",来:"來",没有:"沒有",这:"這",什么:"什麼",谁:"誰",哪里:"哪裡",为什么:"為什麼",对不起:"對不起",没关系:"沒關係",请:"請",妈妈:"媽媽",太阳:"太陽",红色:"紅色",高兴:"高興",出租车:"出租車",折扣:"折扣",商店:"商店",儿子:"兒子",女儿:"女兒",头:"頭",脚:"腳",面条:"麵條",鸡蛋:"雞蛋",苹果:"蘋果",鱼:"魚",鸡:"雞",马:"馬",鸟:"鳥",龙:"龍",点:"點",分钟:"分鐘",年轻:"年輕",医院:"醫院",银行:"銀行",饭店:"飯店",机场:"機場",火车站:"火車站",国家:"國家",法国:"法國",喜欢:"喜歡",开:"開",关:"關",给:"給",帮助:"幫助",睡觉:"睡覺",问:"問",会:"會",旧:"舊",难:"難",热:"熱",长:"長",远:"遠",对:"對",错:"錯",快乐:"快樂",免费:"免費",网站:"網站",网络:"網絡",软件:"軟件",应用:"應用",密码:"密碼",账户:"賬戶",余额:"餘額",订单:"訂單",价格:"價格",产品:"產品",顾客:"顧客",快递:"快遞",优惠:"優惠",特价:"特價",清仓:"清倉",礼物:"禮物",游戏机:"遊戲機",键盘:"鍵盤",鼠标:"鼠標",电池:"電池",充电器:"充電器",相机:"相機",音乐:"音樂",电影:"電影",动漫:"動漫",视频:"視頻",欢迎:"歡迎",不客气:"不客氣",我爱你:"我愛你",现在:"現在",跳舞:"跳舞",唱歌:"唱歌",跑步:"跑步",面包:"麵包",米饭:"米飯",妻子:"妻子"};
+W.forEach(w=>w.t=TR[w.h]||w.h);
+
+const $=s=>document.querySelector(s);
+const ST={get(k,d){try{const v=localStorage.getItem("dc_"+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem("dc_"+k,JSON.stringify(v))}catch(e){}}};
+let fav=ST.get("fav",[]),hist=ST.get("hist",[]),stat=ST.get("stat",{qok:0,qn:0,wr:0}),known=ST.get("known",[]);
+let V="home",cur=null,lvl=0,q="",back="home",qs=null,fc=null;
+const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+const speak=t=>{try{const u=new SpeechSynthesisUtterance(t);u.lang="zh-CN";u.rate=.8;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}};
+const find=s=>{const k=s.trim(),n=norm(k);return find0(s).sort((a,b)=>sc(a,k,n)-sc(b,k,n))};
+const sc=(w,k,n)=>(w.h===k||w.t===k||norm(w.f).split(/[ ,]+/).includes(n)||norm(w.p).replace(/ /g,"")===n.replace(/ /g,""))?0:1;
+const find0=s=>{const n=norm(s).trim();if(!n)return[];return W.filter(w=>w.h.includes(s.trim())||w.t.includes(s.trim())||norm(w.p).replace(/ /g,"").includes(n.replace(/ /g,""))||norm(w.f).includes(n))};
+const rowH=w=>`<div class="row" onclick="open_(${w.id})"><div class="h">${w.h}</div><div><div class="p">${w.p}</div><div class="f">${w.f}</div><div class="f">繁體 : ${w.t===w.h?"identique":w.t}</div></div><button class="ib" style="margin-left:auto;font-size:20px" onclick="event.stopPropagation();speak('${w.h}')">🔊</button></div>`;
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+function open_(i){cur=W[i];back=V==="detail"?back:V;hist=[i,...hist.filter(x=>x!==i)].slice(0,50);ST.set("hist",hist);go("detail")}
+function go(v){V=v;render();window.scrollTo(0,0)}
+function tog(i){fav=fav.includes(i)?fav.filter(x=>x!==i):[i,...fav];ST.set("fav",fav);render()}
+function head(t,b){return`<div class="top"><button class="ib" onclick="go('${b}')">‹</button><h2>${t}</h2><span style="width:44px"></span></div>`}
+
+function render(){
+ const A=$("#app");
+ const nv=[["home","⌂","Accueil"],["dict","📖","Dictionnaire"],["prog","📊","Progrès"],["prof","👤","Profil"]];
+ const act=({detail:"dict",hsk:"dict",fav:"home",hist:"home",quiz:"home",rev:"home",write:"dict"})[V]||V;
+ $("#nav").innerHTML=nv.map(n=>`<button class="${n[0]===act?"on":""}" onclick="go('${n[0]}')"><i>${n[1]}</i>${n[2]}</button>`).join("");
+ if(V==="home"){const wd=W[new Date().getDate()%W.length];
+  A.innerHTML=`<div class="logo"><div class="lg">中<br>文</div><div><h1>Dico<span>Chinois</span></h1><div class="sub">Apprendre · Comprendre · Réussir</div></div></div>
+  <input type="search" id="s" placeholder="Français, 中文 ou pinyin…" value="${q}" autocomplete="off"><div id="tr"></div><div id="res"></div>
+  <div id="tiles"><div class="grid">
+  <div class="tile" onclick="go('dict')"><i>📖</i>Dictionnaire</div><div class="tile" onclick="go('hsk')"><i>🎓</i>HSK</div>
+  <div class="tile" onclick="startQuiz()"><i>✏️</i>Exercices</div><div class="tile" onclick="startRev()"><i>↻</i>Réviser</div>
+  <div class="tile" onclick="go('fav')"><i>☆</i>Favoris</div><div class="tile" onclick="go('hist')"><i>🕘</i>Historique</div></div>
+  <div class="wod" onclick="open_(${wd.id})"><span class="mu">Mot du jour</span><b>${wd.h}</b><span class="mu">${wd.p} · ${wd.f}</span></div></div>`;
+  const s=$("#s");const upd=()=>{q=s.value;const r=q.trim()?find(q):null;$("#res").innerHTML=r?(r.length?r.map(rowH).join(""):'<p class="mu">Aucun résultat.</p>'):"";$("#tiles").style.display=r?"none":""};
+  s.oninput=()=>{upd();trans(s.value)};upd();
+ }else if(V==="dict"||V==="hsk"){
+  const L=[0,1,2,3,4,5,6];const list=W.filter(w=>!lvl||w.l===lvl).sort((a,b)=>a.l-b.l);
+  A.innerHTML=`<div class="top"><h2>${V==="hsk"?"Niveaux HSK":"Dictionnaire"}</h2></div><input type="search" id="ds" placeholder="Tape un mot en français, 中文 ou pinyin…" value="${q}" autocomplete="off"><div class="chips">${L.map(x=>`<button class="chip ${x===lvl?"on":""}" onclick="lvl=${x};render()">${x?"HSK "+x:"Tous"}</button>`).join("")}</div><div id="tr"></div><div id="dl"></div>`;
+  const ds=$("#ds"),dl=()=>{q=ds.value;const r=q.trim()?find(q).filter(w=>!lvl||w.l===lvl):list;$("#dl").innerHTML=r.map(rowH).join("")||'<p class="mu">Aucun résultat.</p>'};ds.oninput=()=>{dl();trans(ds.value)};dl();
+ }else if(V==="detail"){const w=cur,isF=fav.includes(w.id);
+  const parts=[...w.h].length>1?[...w.h].map(c=>W.find(x=>x.h===c)).filter(Boolean):[];
+  const rel=W.filter(x=>x.id!==w.id&&(x.h.includes(w.h)||(w.h.length>1&&w.h.includes(x.h)&&x.h.length===1)));
+  A.innerHTML=`<div class="top"><button class="ib" onclick="go('${back}')">‹</button><h2>Détail du caractère</h2><button class="ib" onclick="tog(${w.id})">${isF?"★":"☆"}</button></div>
+  <div class="big"><div class="cbox ${w.h.length>2?"s":""}"><span class="badge">HSK ${w.l}</span>${w.h}</div><div><span class="py">${w.p}</span><button class="spk" onclick="speak('${w.h}')">🔊</button><div style="margin-top:10px;font-size:20px">${w.f.split(" (")[0]}</div></div></div>
+  ${parts.length?`<div class="chips">${parts.map(x=>`<button class="chip" onclick="open_(${x.id})" style="font-size:24px">${x.h}</button>`).join("")}</div>`:""}
+  <h3>Façons d’écrire</h3><div class="box"><div>简体 Simplifié : <b style="font-size:26px">${w.h}</b></div><div style="margin-top:8px">繁體 Traditionnel : <b style="font-size:26px">${w.t}</b></div><div style="margin-top:8px">Pinyin : <b>${w.p}</b> <span class="mu">(sans tons : ${norm(w.p)})</span></div></div><h3>Définition</h3><p><b>${w.p}</b> — ${w.f}</p>
+  ${rel.length?`<h3>Mots liés</h3>${rel.map(rowH).join("")}`:""}
+  <button class="btn r" onclick="speak('${w.h}')">▶️ Écouter la prononciation</button>
+  <h3>Comment l’écrire</h3><div id="sg"><div class="box mu">Chargement des traits…</div></div><div class="box"><b>Règles d’écriture</b><ul class="mu" style="margin:8px 0 0;padding-left:20px;line-height:1.6"><li>De haut en bas, puis de gauche à droite.</li><li>Le trait horizontal avant le vertical quand ils se croisent.</li><li>Le trait qui descend à gauche (丿) avant celui qui descend à droite (乀).</li><li>Le milieu avant les côtés (ex. 小).</li><li>On entre avant de fermer : cadre, contenu, puis le trait du bas (ex. 日).</li><li>Les petits points et traits de fermeture se font en dernier.</li></ul></div><button class="btn noprint" onclick="window.print()">🖨️ Imprimer la fiche</button>`;
+  strokeGuide();
+ }else if(V==="quiz"){
+  if(!qs)qs=newQ();const w=qs.w;
+  A.innerHTML=`${head("Exercices","home")}<div class="mu">Score : ${stat.qok} / ${stat.qn}</div><div class="card box">${w.h}<small>Quel est le sens ?</small></div>${qs.o.map((o,i)=>`<button class="opt" onclick="ans(${i})">${o.f.split(" (")[0]}</button>`).join("")}<div id="nx"></div>`;
+ }else if(V==="rev"){
+  if(!fc)fc={w:rnd(W),s:false};
+  A.innerHTML=`${head("Réviser","home")}<div class="box card" onclick="fc.s=true;render()">${fc.w.h}<small>${fc.s?fc.w.p+" · "+fc.w.f.split(" (")[0]:"Touchez pour voir la réponse"}</small></div>
+  ${fc.s?`<div style="display:flex;gap:10px"><button class="btn" onclick="rv(0)">À revoir</button><button class="btn r" onclick="rv(1)">Je sais</button></div><button class="btn" onclick="speak('${fc.w.h}')">🔊 Écouter</button>`:""}<p class="mu">Mots maîtrisés : ${known.length} / ${W.length}</p>`;
+ }else if(V==="fav"||V==="hist"){
+  const L=(V==="fav"?fav:hist).map(i=>W[i]);
+  A.innerHTML=`${head(V==="fav"?"Favoris":"Historique","home")}${L.map(rowH).join("")||'<p class="mu">Rien ici pour le moment.</p>'}`;
+ }else if(V==="prog"){
+  const seen=new Set(hist);const pc=stat.qn?Math.round(100*stat.qok/stat.qn):0;
+  A.innerHTML=`<div class="top"><h2>Progrès</h2></div>
+  <div class="box"><b>Mots consultés</b> : ${seen.size} / ${W.length}<div class="bar"><div style="width:${100*seen.size/W.length}%"></div></div>
+  <b>Mots maîtrisés</b> : ${known.length} / ${W.length}<div class="bar"><div style="width:${100*known.length/W.length}%"></div></div>
+  <b>Réussite aux exercices</b> : ${pc}% (${stat.qok}/${stat.qn})<div class="bar"><div style="width:${pc}%"></div></div>
+  <b>Favoris</b> : ${fav.length}</div>`;
+ }else{
+  A.innerHTML=`<div class="top"><h2>Profil</h2></div><div class="box"><b>DicoChinois</b><p class="mu">Dictionnaire et outil d’apprentissage du chinois : caractères, pinyin, prononciation, HSK, exercices et écriture.</p></div><button class="btn" onclick="if(confirm('Effacer toute ta progression ?')){fav=[];hist=[];known=[];stat={qok:0,qn:0,wr:0};['fav','hist','known','stat'].forEach(k=>ST.set(k,null));render()}">Réinitialiser ma progression</button>`;
+ }
+}
+
+let tTimer,tCtl,tSample,tLast="";
+const esc=s=>String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function trans(t){
+ clearTimeout(tTimer);if(tCtl)tCtl.abort();const box=$("#tr");if(!box)return;
+ t=t.trim();tLast=t;
+ if(t.split(/\s+/).length<2||/[\u4e00-\u9fff]/.test(t)){box.innerHTML="";return}
+ box.innerHTML='<div class="box mu">Traduction en cours…</div>';
+ tTimer=setTimeout(async()=>{
+  try{
+   if(typeof claude==="undefined"){box.innerHTML='<div class="box mu">La traduction de phrases fonctionne uniquement sur la version claude.ai du site.</div>';return}
+   tSample=tSample||await claude.use("sample");
+   if(!tSample){box.innerHTML='<div class="box mu">Traduction de phrases indisponible ici.</div>';return}
+   tCtl=new AbortController();
+   const r=await tSample('Traduis cette phrase française en chinois mandarin. Réponds uniquement avec un JSON {"s":"chinois simplifié","t":"chinois traditionnel","p":"pinyin avec tons"}, sans autre texte. Phrase : '+t,{signal:tCtl.signal,modelTier:"quick"});
+   const j=JSON.parse(r.text.replace(/```json|```/g,"").trim());
+   if(tLast===t&&box.isConnected)box.innerHTML=`<div class="box"><div class="mu">Phrase en chinois</div><div style="font-size:26px;margin:6px 0">${esc(j.s)}</div><div class="mu">繁體 : ${esc(j.t)}</div><div style="margin:6px 0">${esc(j.p)}</div><button class="chip" onclick="speak(this.dataset.z)" data-z="${esc(j.s)}">🔊 Écouter</button></div>`;
+  }catch(e){if(tLast!==t||(e&&e.name==="AbortError"))return;box.innerHTML='<div class="box mu">'+(e&&e.code==="not_granted"?"Autorise la traduction pour voir la phrase en chinois.":"Impossible de traduire pour le moment.")+'</div>'}
+ },700)
+}
+
+const hwData={};
+async function getData(c){
+ if(hwData[c]!==undefined)return hwData[c];
+ for(const v of ["2.0.1","2.0","latest"]){try{const r=await fetch("https://cdn.jsdelivr.net/npm/hanzi-writer-data@"+v+"/"+encodeURIComponent(c)+".json");if(r.ok)return hwData[c]=await r.json()}catch(e){}}
+ return hwData[c]=null
+}
+const GRID='<path d="M0 0L1024 1024M1024 0L0 1024M512 0V1024M0 512H1024" stroke="currentColor" stroke-opacity=".2" stroke-dasharray="14 14" stroke-width="6" fill="none"/>';
+function svg(d,k,nums){
+ let s='<svg viewBox="0 0 1024 1024" width="100%" style="display:block;color:var(--tx)"><rect x="4" y="4" width="1016" height="1016" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width="8"/>'+GRID+'<g transform="scale(1,-1) translate(0,-900)">';
+ d.strokes.forEach((p,i)=>{if(i<k)s+=`<path d="${p}" fill="${!nums&&i===k-1?"#e5173a":"currentColor"}" fill-opacity="${!nums&&i===k-1?1:.55}"/>`});
+ s+="</g>";
+ if(nums)d.medians.forEach((m,i)=>{s+=`<text x="${m[0][0]}" y="${900-m[0][1]}" font-size="100" font-weight="700" fill="#e5173a" text-anchor="middle" dominant-baseline="central" stroke="#0a0a0c" stroke-width="16" paint-order="stroke">${i+1}</text>`});
+ return s+"</svg>"
+}
+async function strokeGuide(){
+ const chars=[...cur.h],id=cur.id,ds=await Promise.all(chars.map(getData)),box=$("#sg");
+ if(!box||V!=="detail"||cur.id!==id)return;
+ if(ds.some(d=>!d)){box.innerHTML='<div class="box mu">Les schémas des traits se chargent depuis internet et ne sont pas disponibles ici. Les règles ci-dessous marchent partout.</div>';return}
+ box.innerHTML=chars.map((c,ci)=>{const d=ds[ci],n=d.strokes.length;return `<div class="box"><div style="display:flex;gap:14px;align-items:center;margin-bottom:12px"><div style="width:130px;flex:none">${svg(d,n,true)}</div><div><b style="font-size:26px">${c}</b><div class="mu">${n} trait${n>1?"s":""} · suis l’ordre des numéros</div></div></div><div class="steps">${d.strokes.map((_,k)=>`<div>${svg(d,k+1,false)}<div class="mu" style="text-align:center;font-size:13px">Trait ${k+1}</div></div>`).join("")}</div></div>`}).join("")
+}
+function newQ(){const w=rnd(W);const o=[w];while(o.length<4){const x=rnd(W);if(!o.includes(x)&&x.f!==w.f)o.push(x)}return{w,o:o.sort(()=>Math.random()-.5),d:false}}
+function startQuiz(){qs=null;go("quiz")}
+function startRev(){fc=null;go("rev")}
+function ans(i){if(qs.d)return;qs.d=true;const ok=qs.o[i]===qs.w;stat.qn++;if(ok)stat.qok++;ST.set("stat",stat);
+ document.querySelectorAll(".opt").forEach((b,j)=>{if(qs.o[j]===qs.w)b.classList.add("ok");else if(j===i)b.classList.add("no")});
+ $("#nx").innerHTML=`<p>${ok?"Bravo ! ✓":"Pas tout à fait."} <b>${qs.w.p}</b></p><button class="btn r" onclick="qs=null;render()">Suivant ›</button>`;speak(qs.w.h)}
+function rv(k){const id=fc.w.id;known=k?[...new Set([...known,id])]:known.filter(x=>x!==id);ST.set("known",known);fc=null;render()}
+render();
+</script>
+</body>
+</html>
