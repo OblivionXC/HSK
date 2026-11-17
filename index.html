@@ -96,7 +96,11 @@ const ST={get(k,d){try{const v=localStorage.getItem("dc_"+k);return v?JSON.parse
 let fav=ST.get("fav",[]),hist=ST.get("hist",[]),stat=ST.get("stat",{qok:0,qn:0,wr:0}),known=ST.get("known",[]);
 let V="home",cur=null,lvl=0,q="",back="home",qs=null,fc=null;
 const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
-const speak=t=>{try{const u=new SpeechSynthesisUtterance(t);u.lang="zh-CN";u.rate=.8;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}};
+
+/* Voix chinoise : choisit explicitement une voix zh si disponible */
+const speak=t=>{try{const u=new SpeechSynthesisUtterance(t);u.lang="zh-CN";const v=speechSynthesis.getVoices().find(v=>/^zh/i.test(v.lang));if(v)u.voice=v;u.rate=.8;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}};
+try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices()}catch(e){}
+
 const find=s=>{const k=s.trim(),n=norm(k);return find0(s).sort((a,b)=>sc(a,k,n)-sc(b,k,n))};
 const sc=(w,k,n)=>(w.h===k||w.t===k||norm(w.f).split(/[ ,]+/).includes(n)||norm(w.p).replace(/ /g,"")===n.replace(/ /g,""))?0:1;
 const find0=s=>{const n=norm(s).trim();if(!n)return[];return W.filter(w=>w.h.includes(s.trim())||w.t.includes(s.trim())||norm(w.p).replace(/ /g,"").includes(n.replace(/ /g,""))||norm(w.f).includes(n))};
@@ -106,6 +110,29 @@ function open_(i){cur=W[i];back=V==="detail"?back:V;hist=[i,...hist.filter(x=>x!
 function go(v){V=v;render();window.scrollTo(0,0)}
 function tog(i){fav=fav.includes(i)?fav.filter(x=>x!==i):[i,...fav];ST.set("fav",fav);render()}
 function head(t,b){return`<div class="top"><button class="ib" onclick="go('${b}')">‹</button><h2>${t}</h2><span style="width:44px"></span></div>`}
+
+const esc=s=>String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const hasZh=s=>/[\u4e00-\u9fff]/.test(s||"");
+
+/* Traduction FR → chinois avec pinyin. Vérifie que le résultat contient du chinois. */
+async function zhTranslate(t){
+ try{
+  const r=await fetch("https://translate.googleapis.com/translate_a/single?client=gtx&sl=fr&tl=zh-CN&dt=t&dt=rm&q="+encodeURIComponent(t));
+  const d=await r.json();
+  const zh=(d[0]||[]).map(x=>x[0]||"").join("");
+  const py=(d[0]||[]).filter(x=>!x[0]&&x[2]).map(x=>x[2]).join(" ");
+  if(hasZh(zh))return{zh,py};
+ }catch(e){}
+ try{
+  const r=await fetch("https://api.mymemory.translated.net/get?q="+encodeURIComponent(t)+"&langpair=fr|zh-CN");
+  const d=await r.json();
+  let zh=d.responseData&&d.responseData.translatedText;
+  if(!hasZh(zh)){const m=(d.matches||[]).find(m=>hasZh(m.translation));zh=m&&m.translation}
+  if(hasZh(zh))return{zh,py:""};
+ }catch(e){}
+ return null;
+}
+const onlineBox=(r,term)=>r?`<div class="box"><div class="mu">Résultat en ligne</div><div style="font-size:36px;color:var(--red);margin:6px 0"><b>${esc(r.zh)}</b></div>${r.py?`<div class="py">${esc(r.py)}</div>`:""}<div class="f">${esc(term)}</div><button class="chip" style="margin-top:10px" onclick="speak(this.dataset.z)" data-z="${esc(r.zh)}">🔊 Écouter</button></div>`:'<p class="mu">Aucun résultat.</p>';
 
 function render(){
  const A=$("#app");
@@ -120,46 +147,23 @@ function render(){
   <div class="tile" onclick="startQuiz()"><i>✏️</i>Exercices</div><div class="tile" onclick="startRev()"><i>↻</i>Réviser</div>
   <div class="tile" onclick="go('fav')"><i>☆</i>Favoris</div><div class="tile" onclick="go('hist')"><i>🕘</i>Historique</div></div>
   <div class="wod" onclick="open_(${wd.id})"><span class="mu">Mot du jour</span><b>${wd.h}</b><span class="mu">${wd.p} · ${wd.f}</span></div></div>`;
-  
+
   const s=$("#s");
   let searchTimer;
   const upd=()=>{
     q=s.value;
     const term=q.trim();
     const r=term?find(term):null;
-    
-    if(!r){
-      $("#res").innerHTML="";
-      $("#tiles").style.display="";
-      return;
-    }
-    
+    clearTimeout(searchTimer);
+    if(!r){$("#res").innerHTML="";$("#tiles").style.display="";return}
     $("#tiles").style.display="none";
     if(r.length>0){
       $("#res").innerHTML=r.map(rowH).join("");
     }else{
       $("#res").innerHTML='<p class="mu">Recherche en ligne...</p>';
-      clearTimeout(searchTimer);
       searchTimer=setTimeout(async()=>{
-        try{
-          const res=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(term)}&langpair=fr|zh-CN`);
-          const data=await res.json();
-          if(data&&data.responseData&&data.responseData.translatedText&&s.value.trim()===term){
-            const trText=data.responseData.translatedText;
-            // Appel secondaire pour récupérer une estimation du Pinyin via l'API MyMemory (traduction inverse vers l'anglais/pinyin ou affichage structuré)
-            $("#res").innerHTML=`
-              <div class="box">
-                <div class="mu">Résultat en ligne (Traduction)</div>
-                <div style="font-size:30px;color:var(--red);margin:6px 0"><b>${esc(trText)}</b></div>
-                <div class="f">Recherche : "${esc(term)}"</div>
-                <button class="chip" style="margin-top:10px" onclick="speak(this.dataset.z)" data-z="${esc(trText)}">🔊 Écouter</button>
-              </div>`;
-          }else if(s.value.trim()===term){
-            $("#res").innerHTML='<p class="mu">Aucun résultat.</p>';
-          }
-        }catch(e){
-          if(s.value.trim()===term)$("#res").innerHTML='<p class="mu">Aucun résultat.</p>';
-        }
+        const r=await zhTranslate(term);
+        if(s.value.trim()===term)$("#res").innerHTML=onlineBox(r,term);
       },500);
     }
   };
@@ -168,38 +172,21 @@ function render(){
  }else if(V==="dict"||V==="hsk"){
   const L=[0,1,2,3,4,5,6];const list=W.filter(w=>!lvl||w.l===lvl).sort((a,b)=>a.l-b.l);
   A.innerHTML=`<div class="top"><h2>${V==="hsk"?"Niveaux HSK":"Dictionnaire"}</h2></div><input type="search" id="ds" placeholder="Tape un mot en français, 中文 ou pinyin…" value="${q}" autocomplete="off"><div class="chips">${L.map(x=>`<button class="chip ${x===lvl?"on":""}" onclick="lvl=${x};render()">${x?"HSK "+x:"Tous"}</button>`).join("")}</div><div id="tr"></div><div id="dl"></div>`;
-  
+
   const ds=$("#ds");
   let dictSearchTimer;
   const dl=()=>{
     q=ds.value;
     const term=q.trim();
     const r=term?find(term).filter(w=>!lvl||w.l===lvl):list;
-    
+    clearTimeout(dictSearchTimer);
     if(r.length>0){
       $("#dl").innerHTML=r.map(rowH).join("");
     }else{
       $("#dl").innerHTML='<p class="mu">Recherche en ligne...</p>';
-      clearTimeout(dictSearchTimer);
       dictSearchTimer=setTimeout(async()=>{
-        try{
-          const res=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(term)}&langpair=fr|zh-CN`);
-          const data=await res.json();
-          if(data&&data.responseData&&data.responseData.translatedText&&ds.value.trim()===term){
-            const trText=data.responseData.translatedText;
-            $("#dl").innerHTML=`
-              <div class="box">
-                <div class="mu">Résultat en ligne (Traduction)</div>
-                <div style="font-size:30px;color:var(--red);margin:6px 0"><b>${esc(trText)}</b></div>
-                <div class="f">Recherche : "${esc(term)}"</div>
-                <button class="chip" style="margin-top:10px" onclick="speak(this.dataset.z)" data-z="${esc(trText)}">🔊 Écouter</button>
-              </div>`;
-          }else if(ds.value.trim()===term){
-            $("#dl").innerHTML='<p class="mu">Aucun résultat.</p>';
-          }
-        }catch(e){
-          if(ds.value.trim()===term)$("#dl").innerHTML='<p class="mu">Aucun résultat.</p>';
-        }
+        const r=await zhTranslate(term);
+        if(ds.value.trim()===term)$("#dl").innerHTML=onlineBox(r,term);
       },500);
     }
   };
@@ -238,28 +225,17 @@ function render(){
  }
 }
 
-let tTimer,tCtl,tLast="";
-const esc=s=>String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-
+/* Traduction de phrases (2 mots ou plus) */
+let tTimer,tLast="";
 async function trans(t){
- clearTimeout(tTimer);if(tCtl)tCtl.abort();const box=$("#tr");if(!box)return;
+ clearTimeout(tTimer);const box=$("#tr");if(!box)return;
  t=t.trim();tLast=t;
- if(t.split(/\s+/).length<2||/[\u4e00-\u9fff]/.test(t)){box.innerHTML="";return}
+ if(t.split(/\s+/).length<2||hasZh(t)){box.innerHTML="";return}
  box.innerHTML='<div class="box mu">Traduction en cours…</div>';
  tTimer=setTimeout(async()=>{
-  try{
-   tCtl=new AbortController();
-   const res=waitRes=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(t)}&langpair=fr|zh-CN`,{signal:tCtl.signal});
-   const data=await res.json();
-   if(data&&data.responseData&&data.responseData.translatedText){
-    const translated=data.responseData.translatedText;
-    if(tLast===t&&box.isConnected){
-     box.innerHTML=`<div class="box"><div class="mu">Traduction de phrase</div><div style="font-size:26px;margin:6px 0">${esc(translated)}</div><button class="chip" onclick="speak(this.dataset.z)" data-z="${esc(translated)}">🔊 Écouter</button></div>`;
-    }
-   }else{
-    if(tLast===t&&box.isConnected)box.innerHTML='<div class="box mu">Impossible de traduire pour le moment.</div>';
-   }
-  }catch(e){if(tLast!==t||(e&&e.name==="AbortError"))return;box.innerHTML='<div class="box mu">Impossible de traduire pour le moment.</div>'}
+  const r=await zhTranslate(t);
+  if(tLast!==t||!box.isConnected)return;
+  box.innerHTML=r?`<div class="box"><div class="mu">Traduction de phrase</div><div style="font-size:26px;margin:6px 0">${esc(r.zh)}</div>${r.py?`<div class="mu">${esc(r.py)}</div>`:""}<button class="chip" style="margin-top:8px" onclick="speak(this.dataset.z)" data-z="${esc(r.zh)}">🔊 Écouter</button></div>`:'<div class="box mu">Impossible de traduire pour le moment.</div>';
  },700)
 }
 
